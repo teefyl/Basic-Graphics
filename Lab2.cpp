@@ -4,15 +4,17 @@
 #include<glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 
 
 
 
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
-int transType = 0;
-bool started = 0; 
 glm::mat4 trans = glm::mat4();
+glm::mat4 myMatrix = glm::mat4();
+glm::mat4 trans2 = glm::mat4();
 
 using namespace std;
 
@@ -138,23 +140,12 @@ GLuint generateObjectBuffer(GLfloat vertices[], GLfloat colors[]) {
 }
 
 void linkCurrentBuffertoShader(GLuint shaderProgramID) {
-	
-	if (transType == 1) {
-		trans = glm::rotate(trans, glm::radians(10.0f), glm::vec3(0.f, 0.0f, 1.0f));
-
-	}
-	if (transType == 2) {
-		trans = glm::rotate(trans, glm::radians(10.0f), glm::vec3(1.f, 0.0f, 1.0f));
-	}
-	if (transType == 3) {
-		trans = glm::rotate(trans, glm::radians(10.0f), glm::vec3(0.f, 1.0f, 1.0f));
-	}
 	GLuint numVertices = 4;
 	// find the location of the variables that we will be using in the shader program
 	GLuint positionID = glGetAttribLocation(shaderProgramID, "vPosition");
 	GLuint colorID = glGetAttribLocation(shaderProgramID, "vColor");
 	GLint uniTrans = glGetUniformLocation(shaderProgramID, "trans"); //ADDED
-	// Have to enable this
+																	 // Have to enable this
 	glEnableVertexAttribArray(positionID);
 	// Tell it where to find the position data in the currently active buffer (at index positionID)
 	glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -171,26 +162,71 @@ void linkCurrentBuffertoShader(GLuint shaderProgramID) {
 void keyPressed(unsigned char key, int x, int y) {
 	switch (key) {
 	case 'w': //rotate X axis
-		transType = 1;
-			
-		printf("WORKING W, transtype= %d", transType);
+		trans = glm::rotate(trans, glm::radians(10.0f), glm::vec3(0.f, 0.0f, 1.0f));
+		printf("WORKING W");
 		break;
 	case 'a'://rotate Y axis
-		transType = 2;
+		trans = glm::rotate(trans, glm::radians(10.0f), glm::vec3(1.f, 0.0f, 1.0f));
 		printf("WORKING A");
 		break;
 	case 's'://rotate Z axis
-		transType = 3;
+		trans = glm::rotate(trans, glm::radians(10.0f), glm::vec3(0.f, 1.0f, 1.0f));
 		printf("WORKING S");
 		break;
+	case 'z'://translate the X pos by -.1
+		myMatrix = glm::translate(glm::mat4(), glm::vec3(-0.1f, 0.0f, 0.0f));
+		trans = myMatrix * trans;
+		break;
+	case 'x'://translate the X pos by .1
+		myMatrix = glm::translate(glm::mat4(), glm::vec3(0.1f, 0.0f, 0.0f));
+		trans = myMatrix * trans;
+		break;
+	case 'c'://translate the Y pos by -.1
+		myMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, -0.1f, 0.0f));
+		trans = myMatrix * trans;
+		break;
+	case 'v'://translate the Y pos by .1
+		myMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.1f, 0.0f));
+		trans = myMatrix * trans;
+		break;
+	case 'b'://translate the Z pos by -.1
+		myMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -0.1f));
+		trans = myMatrix * trans;
+		break;
+	case 'n'://translate the Z pos by .1
+		myMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -0.1f));
+		trans = myMatrix * trans;
+		break;
+	case 'k'://uniform scaling larger
+		myMatrix = glm::scale(glm::mat4(), glm::vec3(2.0f, 2.0f, 2.0f));
+		trans = myMatrix*trans;
+		break;
+	case 'l'://uniform scaling smaller
+		myMatrix = glm::scale(glm::mat4(), glm::vec3(0.5f, 0.5f, 0.5f));
+		trans = myMatrix*trans;
+		break;
+	case 'o'://non uniform scaling larger
+		myMatrix = glm::scale(glm::mat4(), glm::vec3(2.0f, 1.0f, 1.0f));
+		trans = myMatrix*trans;
+		break;
+	case 'p'://non uniform scaling smaller
+		myMatrix = glm::scale(glm::mat4(), glm::vec3(0.5f, 0.75f, 0.75f));
+		trans = myMatrix*trans;
+		break;
+	case 'i'://combined transformation scale it down and rotate it by 60 rads
+		myMatrix = glm::scale(glm::mat4(), glm::vec3(0.5f, 0.5f, 0.5f));
+		trans = myMatrix*trans;
+		trans = glm::rotate(trans, glm::radians(60.0f), glm::vec3(0.f, 0.0f, 1.0f));
+		break;
+
 	default:
-		printf("DEFAULT, transtype= %d", transType);
-		transType = 0;
+		printf("DEFAULT");
 		break;
 	}
-	printf("END SWITCH, transtype= %d", transType);
+	printf("END SWITCH");
+	glutPostRedisplay();
 	GLuint shaderProgramID = CompileShaders();
-	
+
 	// Link the current buffer to the shader
 	linkCurrentBuffertoShader(shaderProgramID);
 }
@@ -201,7 +237,7 @@ void display() {
 	glClear(GL_COLOR_BUFFER_BIT);
 	// NB: Make the call to draw the geometry in the currently activated vertex buffer. This is where the GPU starts to work!
 	glDrawArrays(GL_QUADS, 0, 4);
-	
+
 	glutSwapBuffers();
 
 
@@ -230,13 +266,13 @@ void init()
 }
 
 int main(int argc, char** argv) {
-	
+
 	// Set up the window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(800, 800);
 	glutCreateWindow("Lab 2");
-	
+
 	// Tell glut where the display function is
 	glutDisplayFunc(display);
 
@@ -253,7 +289,7 @@ int main(int argc, char** argv) {
 
 	glutKeyboardFunc(keyPressed); // Tell GLUT to use the method "keyPressed" for key presses ADDED
 
-	// Begin infinite event loop
+								  // Begin infinite event loop
 	glutMainLoop();
 
 	return 0;
