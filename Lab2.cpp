@@ -124,7 +124,7 @@ GLuint CompileShaders()
 // VBO Functions - click on + to expand
 #pragma region VBO_FUNCTIONS
 GLuint generateObjectBuffer(GLfloat vertices[], GLfloat colors[]) {
-	GLuint numVertices = 4;
+	GLuint numVertices = 6;
 	// Genderate 1 generic buffer object, called VBO
 	GLuint VBO;
 	glGenBuffers(1, &VBO);
@@ -140,11 +140,12 @@ GLuint generateObjectBuffer(GLfloat vertices[], GLfloat colors[]) {
 }
 
 void linkCurrentBuffertoShader(GLuint shaderProgramID) {
-	GLuint numVertices = 4;
+	GLuint numVertices = 6;
 	// find the location of the variables that we will be using in the shader program
 	GLuint positionID = glGetAttribLocation(shaderProgramID, "vPosition");
 	GLuint colorID = glGetAttribLocation(shaderProgramID, "vColor");
 	GLint uniTrans = glGetUniformLocation(shaderProgramID, "trans"); //ADDED
+																	 //GLint uniTrans2 = glGetUniformLocation(shaderProgramID, "trans2");
 																	 // Have to enable this
 	glEnableVertexAttribArray(positionID);
 	// Tell it where to find the position data in the currently active buffer (at index positionID)
@@ -156,22 +157,20 @@ void linkCurrentBuffertoShader(GLuint shaderProgramID) {
 	glUniformMatrix4fv(uniTrans, 1, GL_FALSE, glm::value_ptr(trans));//ADDED
 
 
+
 }
 #pragma endregion VBO_FUNCTIONS
 
 void keyPressed(unsigned char key, int x, int y) {
 	switch (key) {
 	case 'w': //rotate X axis
-		trans = glm::rotate(trans, glm::radians(10.0f), glm::vec3(0.f, 0.0f, 1.0f));
-		printf("WORKING W");
+		trans = glm::rotate(trans, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		break;
 	case 'a'://rotate Y axis
-		trans = glm::rotate(trans, glm::radians(10.0f), glm::vec3(1.f, 0.0f, 1.0f));
-		printf("WORKING A");
+		trans = glm::rotate(trans, glm::radians(10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		break;
 	case 's'://rotate Z axis
-		trans = glm::rotate(trans, glm::radians(10.0f), glm::vec3(0.f, 1.0f, 1.0f));
-		printf("WORKING S");
+		trans = glm::rotate(trans, glm::radians(10.0f), glm::vec3(0.f, 0.0f, 1.0f));
 		break;
 	case 'z'://translate the X pos by -.1
 		myMatrix = glm::translate(glm::mat4(), glm::vec3(-0.1f, 0.0f, 0.0f));
@@ -194,12 +193,13 @@ void keyPressed(unsigned char key, int x, int y) {
 		trans = myMatrix * trans;
 		break;
 	case 'n'://translate the Z pos by .1
-		myMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -0.1f));
+		myMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 0.1f));
 		trans = myMatrix * trans;
 		break;
 	case 'k'://uniform scaling larger
 		myMatrix = glm::scale(glm::mat4(), glm::vec3(2.0f, 2.0f, 2.0f));
 		trans = myMatrix*trans;
+
 		break;
 	case 'l'://uniform scaling smaller
 		myMatrix = glm::scale(glm::mat4(), glm::vec3(0.5f, 0.5f, 0.5f));
@@ -220,10 +220,10 @@ void keyPressed(unsigned char key, int x, int y) {
 		break;
 
 	default:
-		printf("DEFAULT");
+
 		break;
 	}
-	printf("END SWITCH");
+
 	glutPostRedisplay();
 	GLuint shaderProgramID = CompileShaders();
 
@@ -236,7 +236,7 @@ void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	// NB: Make the call to draw the geometry in the currently activated vertex buffer. This is where the GPU starts to work!
-	glDrawArrays(GL_QUADS, 0, 4);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	glutSwapBuffers();
 
@@ -247,16 +247,23 @@ void display() {
 void init()
 {
 	// Create 3 vertices that make up a triangle that fits on the viewport 
-	GLfloat vertices[] = { -0.5f, 0.5f, 0.0f,
-		0.5f, 0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f };
+	GLfloat vertices[] = { -1.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		-0.5f, 1.0f, 0.0f,
+		-1.0f, 0.0f, 0.0f };
+
+
 
 	// Create a color array that identfies the colors of each vertex (format R, G, B, A)
 	GLfloat colors[] = { 1.0f, 0.0f, 0.0f, 1.0f,
 		0.0f, 1.0f, 0.0f, 1.0f,
 		0.0f, 0.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, 0.0f, 1.0f };
+		1.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 1.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f, 1.0f
+	};
 	// Set up the shaders
 	GLuint shaderProgramID = CompileShaders();
 	// Put the vertices and colors into a vertex buffer object
