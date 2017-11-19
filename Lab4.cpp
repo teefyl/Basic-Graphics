@@ -22,6 +22,7 @@ GLuint loc1;
 GLuint loc2;
 mat4 trans = identity_mat4();
 mat4 myMatrix =identity_mat4();
+mat4 anotherMatrix = identity_mat4(); 
 
 GLfloat rotatez = 0.0f;
 
@@ -170,51 +171,56 @@ void display(){
 	mat4 view = (translate ( identity_mat4 (), vec3(0,0,-40)));
 	mat4 persp_proj = perspective(45.0, (float)width/(float)height, 0.1, 100.0);
 	mat4 local1 = identity_mat4 ();
-	local1 = rotate_z_deg (local1, 45.0f);  //OVERALL LOCATION
 	local1 = translate (local1, vec3 (0.0, 0.0, -60.0f));
 
 	// for the root, we orient it in global space
-	mat4 global1 =  local1;
+	mat4 global1 =  local1*myMatrix;
 	// update uniforms & draw
 	glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, persp_proj.m);
 	glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view.m);
 	glUniformMatrix4fv (matrix_location, 1, GL_FALSE, global1.m);
 	glDrawArrays (GL_TRIANGLES, 0, teapot_vertex_count);
 
-	// child of hierarchy above middle teapot
-	mat4 local2 = myMatrix;
-	local2 = translate (local2, vec3 (0.0, 15.0, 0.0));
-	// global of the child is got by pre-multiplying the local of the child by the global of the parent
-	mat4 global2 = global1*local2;
-	// update uniform & draw
-	glUniformMatrix4fv (matrix_location, 1, GL_FALSE, global2.m);
-	glDrawArrays (GL_TRIANGLES, 0, teapot_vertex_count);
-
-	// child of hierarchy above the one above middle
-	mat4 local3 = myMatrix; 
-	local3 = translate(local3, vec3(0.0, 30.0, 0.0));
+	// child of hierarchy TOP
+	mat4 local3 = trans;
+	local3 = translate(local3, vec3(30.0, 30.0, 0.0));
 	// global of the child is got by pre-multiplying the local of the child by the global of the parent
 	mat4 global3 = global1*local3;
 	// update uniform & draw
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, global3.m);
 	glDrawArrays(GL_TRIANGLES, 0, teapot_vertex_count);
 
-	// child of hierarchy below middle
-	mat4 local4 = trans*myMatrix;
-	// translation is 15 units in the y direction from the parents coordinate system
-	local4 = translate(local4, vec3(0.0, -15.0, 0.0));
+	// child of hierarchy 2ND
+	mat4 local2 = identity_mat4();
+	local2 = translate (local2, vec3 (-15.0, -15.0, 0.0));
 	// global of the child is got by pre-multiplying the local of the child by the global of the parent
-	mat4 global4 = global1*local4;
+	mat4 global2 = global3*local2;
+	// update uniform & draw
+	glUniformMatrix4fv (matrix_location, 1, GL_FALSE, global2.m);
+	glDrawArrays (GL_TRIANGLES, 0, teapot_vertex_count);
+
+
+
+	// child of hierarchy 4TH
+	mat4 local4 = identity_mat4();
+	// translation is 15 units in the y direction from the parents coordinate system
+	local4 = translate(local4, vec3(-45.0, -45.0, 0.0));
+	// global of the child is got by pre-multiplying the local of the child by the global of the parent
+	mat4 global4 = global3*local4;
+	
 	// update uniform & draw
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, global4.m);
 	glDrawArrays(GL_TRIANGLES, 0, teapot_vertex_count);
 
-	// child of hierarchy below the one below middle
-	mat4 local5 = identity_mat4();
+	// child of hierarchy 5TH
+	mat4 local5 = anotherMatrix;
 	// translation is 15 units in the y direction from the parents coordinate system
-	local5 = translate(local5, vec3(0.0, -15.0, 0.0));
+	local5 = translate(local5, vec3(-15.0, -15.0, 0.0));
+	
 	// global of the child is got by pre-multiplying the local of the child by the global of the parent
 	mat4 global5 = global4*local5;
+
+	
 	// update uniform & draw
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, global5.m);
 	glDrawArrays(GL_TRIANGLES, 0, teapot_vertex_count);
@@ -233,8 +239,7 @@ void updateScene() {
 	if (delta > 0.03f)
 		delta = 0.03f;
 	last_time = curr_time;
-
-	rotatez+=0.2f;
+	rotatez -= 0.05f;
 	// Draw the next frame
 	glutPostRedisplay();
 }
@@ -255,62 +260,37 @@ void keypress(unsigned char key, int x, int y) {
 	case 'w': //rotate X axis
 		trans = rotate_x_deg(trans, 10.0f);
 		break;
+	case 'e': //rotate X axis
+		trans = rotate_x_deg(trans, -10.0f);
+		break;
 	case 'a'://rotate Y axis
 		trans = rotate_y_deg(trans, 10.0f);
 		break;
-	case 's'://rotate Z axis
-		trans = rotate_y_deg(trans, 10.0f);
+	case 's'://rotate Y axis
+		trans= rotate_y_deg(trans, -10.0f);
 		break;
-	case 'z'://translate the X pos by -.1
-		myMatrix = translate(identity_mat4(), vec3(-10.0f, 0.0f, 0.0f));
-		
+	case 'z'://rotate Z axis
+		trans = rotate_z_deg(trans, 10.0f);
 		break;
-	case 'x'://translate the X pos by .1
-		myMatrix = translate(identity_mat4(), vec3(10.0f, 0.0f, 0.0f));
+	case 'x'://rotate Z axis
+		trans = rotate_z_deg(trans, -10.0f);
 		break;
-	/*case 'c'://translate the Y pos by -.1
-		myMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, -0.1f, 0.0f));
-		trans = myMatrix * trans;
+	case 'p'://translate the X pos by .1
+		myMatrix = translate(myMatrix, vec3(10.0f, 0.0f, 0.0f));
+		break; 
+	case 'o'://translate the X pos by .1
+		myMatrix = translate(myMatrix, vec3(-10.0f, 0.0f, 0.0f));
 		break;
-	case 'v'://translate the Y pos by .1
-		myMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.1f, 0.0f));
-		trans = myMatrix * trans;
+	case 'l':
+		anotherMatrix = rotate_z_deg(anotherMatrix, 10.0f);
 		break;
-	case 'b'://translate the Z pos by -.1
-		myMatrix = translate(mat4(), vec3(0.0f, 0.0f, -0.1f));
-		trans = myMatrix * trans;
+	case 'k':
+		anotherMatrix = rotate_z_deg(anotherMatrix, -10.0f);
 		break;
-	case 'n'://translate the Z pos by .1
-		myMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 0.1f));
-		trans = myMatrix * trans;
-		break;
-	case 'k'://uniform scaling larger
-		myMatrix = glm::scale(glm::mat4(), glm::vec3(2.0f, 2.0f, 2.0f));
-		trans = myMatrix*trans;
-
-		break;
-	case 'l'://uniform scaling smaller
-		myMatrix = glm::scale(glm::mat4(), glm::vec3(0.5f, 0.5f, 0.5f));
-		trans = myMatrix*trans;
-		break;
-	case 'o'://non uniform scaling larger
-		myMatrix = glm::scale(glm::mat4(), glm::vec3(2.0f, 1.0f, 1.0f));
-		trans = myMatrix*trans;
-		break;
-	case 'p'://non uniform scaling smaller
-		myMatrix = glm::scale(glm::mat4(), glm::vec3(0.5f, 0.75f, 0.75f));
-		trans = myMatrix*trans;
-		break;
-	case 'i'://combined transformation scale it down and rotate it by 60 rads
-		myMatrix = glm::scale(glm::mat4(), glm::vec3(0.5f, 0.5f, 0.5f));
-		trans = myMatrix*trans;
-		trans = glm::rotate(trans, glm::radians(60.0f), glm::vec3(0.f, 0.0f, 1.0f));
-		break;
-		*/
 	default:
 		break;
 	}
-	glutPostRedisplay();
+	
 }
 
 int main(int argc, char** argv){
@@ -338,14 +318,3 @@ int main(int argc, char** argv){
 	glutMainLoop();
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
