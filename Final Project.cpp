@@ -23,19 +23,21 @@
 // this mesh is a dae file format but you should be able to use any other format too, obj is typically what is used
 // put the mesh in your project directory, or provide a filepath for it here
 #define MESH_FENCE "../Lab5/fence.3ds"
+#define MESH_OWL "../Lab5/owl.3ds"
+#define MESH_DUCK "../Lab5/duck.3ds"
 #define MESH_COW "../Lab5/Cow.3ds"
 #define MESH_PLAIN "../Lab5/plain.3ds"
 #define MESH_BARN "../Lab5/Barn.3ds"
 #define MESH_WINDBODY "../Lab5/windbody.3ds"
 #define MESH_WINDHEAD "../Lab5/windhead.3ds"
-#define TEXTURE_NAME "../Lab5/wood.jpg"
+#define BACKGROUND  "../Lab5/sky.jpg"
 #define TEXTURE_COW "../Lab5/Cow.png"
 /*----------------------------------------------------------------------------
   ----------------------------------------------------------------------------*/
 
 std::vector<float> g_vp, g_vn, g_vt;
 int g_point_count = 0;
-int cow_count, fence_count, barn_count, plain_count, body_count, head_count; 
+int cow_count, fence_count, barn_count, plain_count, body_count, head_count, duck_count, owl_count; 
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -210,17 +212,20 @@ void generateObjectBufferMesh() {
 	body_count = g_point_count;
 	load_mesh(MESH_WINDHEAD);
 	head_count = g_point_count;
+	load_mesh(MESH_OWL);
+	owl_count = g_point_count;
 	load_mesh(MESH_FENCE);
 	fence_count = g_point_count;
 	load_mesh(MESH_BARN);
 	barn_count = g_point_count;
+	
    
 	unsigned int vp_vbo = 0;
 	loc1 = glGetAttribLocation(shaderProgramID, "vertex_position");
 	loc2 = glGetAttribLocation(shaderProgramID, "vertex_normal");
 	loc3 = glGetAttribLocation(shaderProgramID, "vertex_texture");
 
-	g_point_count = cow_count + fence_count + barn_count + plain_count + body_count + head_count;
+	g_point_count = cow_count + fence_count + barn_count + plain_count + body_count + head_count + owl_count;
 
 	glGenBuffers (1, &vp_vbo);
 	glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
@@ -259,10 +264,11 @@ void generateObjectBufferMesh() {
 
 void display(){
 
+
 	// tell GL to only draw onto a pixel if the shape is closer to the viewer
 	glEnable (GL_DEPTH_TEST); // enable depth-testing
 	glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
-	glClearColor (0.5f, 0.5f, 0.5f, 1.0f);
+	glClearColor (0.0f, 0.5f, 0.8f, 1.0f);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glUseProgram (shaderProgramID);
 
@@ -273,7 +279,7 @@ void display(){
 	int proj_mat_location = glGetUniformLocation (shaderProgramID, "proj");
 	
 
-	// PARENT - cow
+	// COW
 	mat4 view = identity_mat4();
 	mat4 persp_proj = perspective(45.0, (float)width/(float)height, 0.1, 100.0);
 	mat4 model = translate(identity_mat4(), vec3(0.0f, 0.0f, 0.0f));
@@ -296,7 +302,7 @@ void display(){
 	//WINDMILL
 	view = identity_mat4();
 	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
-	mat4 model5 = translate(model, vec3(0.0f, 1.0f, -18.5f));
+	mat4 model5 = translate(model, vec3(0.0f, 1.0f, -16.5f));
 	view = camMatrix;
 	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
@@ -306,34 +312,49 @@ void display(){
 	//WINDMILL HEAD
 	view = identity_mat4();
 	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
-	mat4 model6 = translate(identity_mat4(), vec3(0.38f, 2.0f,-15.0f));
-	//model6 = rotate_z_deg(model6, rotate_y);
+	mat4 model6 = translate(identity_mat4(), vec3(0.0f, 6.0f,-16.0f));
+	model6 = rotate_z_deg(identity_mat4(), rotate_y);
+	model6 = translate(model6, vec3(0.0f, 6.0f, -16.0f));
 	view = camMatrix;
 	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model6.m);
-	glDrawArrays(GL_TRIANGLES, cow_count + plain_count +body_count, head_count);
+	glDrawArrays(GL_TRIANGLES, cow_count + plain_count +body_count , head_count);
+
+	//BIRD
+	view = identity_mat4();
+	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
+	mat4 owl = translate(model, vec3(-6.0f, 6.0f, 0.0f));
+	owl = rotate_y_deg(owl, rotate_y);
+	view = camMatrix;
+	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
+	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, owl.m);
+	glDrawArrays(GL_TRIANGLES, cow_count + plain_count + body_count + head_count, owl_count);
+
 
 	// fence
 	view = identity_mat4();
 	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
-	mat4 model2 = translate(model, vec3(7.0f, -0.6f, 0.0f));
+	mat4 model2 = translate(model, vec3(7.0f, -1.0f, 0.0f));
 	view = camMatrix;
 	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model2.m);
-	glDrawArrays(GL_TRIANGLES, cow_count + plain_count + body_count+ head_count, fence_count);
+	glDrawArrays(GL_TRIANGLES, cow_count + plain_count + body_count + owl_count + head_count, fence_count);
 	
 
 	//BARN
 	view = identity_mat4();
 	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
-	mat4 model3 = translate(model, vec3(-6.0f, -0.3f, 0.0f));
+	mat4 model3 = translate(model, vec3(-6.0f, -1.0f, 0.0f));
 	view = camMatrix;
 	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model3.m);
-	glDrawArrays(GL_TRIANGLES, fence_count + cow_count + plain_count + body_count+ head_count, barn_count);
+	glDrawArrays(GL_TRIANGLES, cow_count + plain_count + body_count + owl_count + head_count + fence_count, barn_count);
+
+	
 	
     glutSwapBuffers();
 }
@@ -438,17 +459,10 @@ void special(int key, int x, int y)
 
 void mouse(int button, int state,
 	int x, int y) {
-	
 	if (mouseX != 0 && mouseY != 0)
-	{
 		camMatrix = rotate_y_deg(camMatrix, mouseX - x);
-	}
-
-
 	mouseX = x;
 	mouseY = y; 
-	 
-
 }
 
 int main(int argc, char** argv){
