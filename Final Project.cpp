@@ -26,13 +26,16 @@
 #define MESH_COW "../Lab5/Cow.3ds"
 #define MESH_PLAIN "../Lab5/plain.3ds"
 #define MESH_BARN "../Lab5/Barn.3ds"
-//#define TEXTURE_NAME "../Lab5/wood.jpg"
+#define MESH_WINDBODY "../Lab5/windbody.3ds"
+#define MESH_WINDHEAD "../Lab5/windhead.3ds"
+#define TEXTURE_NAME "../Lab5/wood.jpg"
+#define TEXTURE_COW "../Lab5/Cow.png"
 /*----------------------------------------------------------------------------
   ----------------------------------------------------------------------------*/
 
 std::vector<float> g_vp, g_vn, g_vt;
 int g_point_count = 0;
-int cow_count, fence_count, barn_count, plain_count; 
+int cow_count, fence_count, barn_count, plain_count, body_count, head_count; 
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -201,37 +204,41 @@ void generateObjectBufferMesh() {
 
 	load_mesh (MESH_COW);
 	cow_count = g_point_count;
+	load_mesh(MESH_PLAIN);
+	plain_count = g_point_count;
+	load_mesh(MESH_WINDBODY);
+	body_count = g_point_count;
+	load_mesh(MESH_WINDHEAD);
+	head_count = g_point_count;
 	load_mesh(MESH_FENCE);
 	fence_count = g_point_count;
 	load_mesh(MESH_BARN);
 	barn_count = g_point_count;
-	load_mesh(MESH_PLAIN);
-	plain_count = g_point_count;
-
+   
 	unsigned int vp_vbo = 0;
 	loc1 = glGetAttribLocation(shaderProgramID, "vertex_position");
 	loc2 = glGetAttribLocation(shaderProgramID, "vertex_normal");
 	loc3 = glGetAttribLocation(shaderProgramID, "vertex_texture");
 
-	g_point_count = cow_count + fence_count +barn_count + plain_count;
+	g_point_count = cow_count + fence_count + barn_count + plain_count + body_count + head_count;
 
 	glGenBuffers (1, &vp_vbo);
 	glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
 	glBufferData (GL_ARRAY_BUFFER, g_point_count * 3 * sizeof (float), &g_vp[0], GL_STATIC_DRAW);
 	unsigned int vn_vbo = 0;
+	
 	glGenBuffers (1, &vn_vbo);
 	glBindBuffer (GL_ARRAY_BUFFER, vn_vbo);
 	glBufferData (GL_ARRAY_BUFFER, g_point_count * 3 * sizeof (float), &g_vn[0], GL_STATIC_DRAW);
 	
 //	This is for texture coordinates which you don't currently need, so I have commented it out
 //	unsigned int vt_vbo = 0;
-//	glGenBuffers (1, &vt_vbo);
+	//glGenBuffers (1, &vt_vbo);
 //	glBindBuffer (GL_ARRAY_BUFFER, vt_vbo);
 //	glBufferData (GL_ARRAY_BUFFER, g_point_count * 2 * sizeof (float), &g_vt[0], GL_STATIC_DRAW);
 	
 	unsigned int vao = 0;
 	glBindVertexArray (vao);
-
 	glEnableVertexAttribArray (loc1);
 	glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
 	glVertexAttribPointer (loc1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -269,45 +276,64 @@ void display(){
 	// PARENT - cow
 	mat4 view = identity_mat4();
 	mat4 persp_proj = perspective(45.0, (float)width/(float)height, 0.1, 100.0);
-	mat4 model = translate(identity_mat4(), vec3(0.0f, -1.0f, 1.0f));
+	mat4 model = translate(identity_mat4(), vec3(0.0f, 0.0f, 0.0f));
 	view = camMatrix;
 	glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, persp_proj.m);
 	glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view.m);
 	glUniformMatrix4fv (matrix_location, 1, GL_FALSE, model.m);
 	glDrawArrays (GL_TRIANGLES, 0, cow_count);
 
-	// fence
-	view = identity_mat4();
-	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
-	mat4 model2 = translate(model, vec3(3.0f, -0.7f, 0.0f));
-	view = camMatrix;
-	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
-	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
-	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model2.m);
-	glDrawArrays(GL_TRIANGLES, cow_count, fence_count);
-
-	
-	//BARN
-	view = identity_mat4();
-	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
-	mat4 model3 = translate(model, vec3(-6.0f, -0.5f, 0.0f));
-	view = camMatrix;
-	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
-	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
-	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model3.m);
-	glDrawArrays(GL_TRIANGLES, fence_count+cow_count, barn_count);
-
 	//PLAIN
 	view = identity_mat4();
 	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
-	mat4 model4 = translate(model, vec3(0.0f, -2.0f, 0.0f));
+	mat4 model4 = translate(model, vec3(0.0f, -1.5f, 0.0f));
 	view = camMatrix;
 	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model4.m);
-	glDrawArrays(GL_TRIANGLES, fence_count+cow_count+barn_count, plain_count);
+	glDrawArrays(GL_TRIANGLES, cow_count, plain_count);
 
+	//WINDMILL
+	view = identity_mat4();
+	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
+	mat4 model5 = translate(model, vec3(0.0f, 1.0f, -18.5f));
+	view = camMatrix;
+	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
+	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model5.m);
+	glDrawArrays(GL_TRIANGLES, cow_count + plain_count, body_count);
 
+	//WINDMILL HEAD
+	view = identity_mat4();
+	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
+	mat4 model6 = translate(identity_mat4(), vec3(0.38f, 2.0f,-15.0f));
+	//model6 = rotate_z_deg(model6, rotate_y);
+	view = camMatrix;
+	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
+	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model6.m);
+	glDrawArrays(GL_TRIANGLES, cow_count + plain_count +body_count, head_count);
+
+	// fence
+	view = identity_mat4();
+	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
+	mat4 model2 = translate(model, vec3(7.0f, -0.6f, 0.0f));
+	view = camMatrix;
+	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
+	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model2.m);
+	glDrawArrays(GL_TRIANGLES, cow_count + plain_count + body_count+ head_count, fence_count);
+	
+
+	//BARN
+	view = identity_mat4();
+	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
+	mat4 model3 = translate(model, vec3(-6.0f, -0.3f, 0.0f));
+	view = camMatrix;
+	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
+	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model3.m);
+	glDrawArrays(GL_TRIANGLES, fence_count + cow_count + plain_count + body_count+ head_count, barn_count);
 	
     glutSwapBuffers();
 }
