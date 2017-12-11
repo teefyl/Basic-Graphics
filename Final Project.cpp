@@ -23,21 +23,20 @@
 // this mesh is a dae file format but you should be able to use any other format too, obj is typically what is used
 // put the mesh in your project directory, or provide a filepath for it here
 #define MESH_FENCE "../Lab5/fence.3ds"
-#define MESH_OWL "../Lab5/owl.3ds"
-#define MESH_DUCK "../Lab5/duck.3ds"
+#define MESH_BIRD "../Lab5/bird.3ds"
+#define MESH_DUCK "../Lab5/flowa.3ds"
 #define MESH_COW "../Lab5/Cow.3ds"
 #define MESH_PLAIN "../Lab5/plain.3ds"
 #define MESH_BARN "../Lab5/Barn.3ds"
 #define MESH_WINDBODY "../Lab5/windbody.3ds"
 #define MESH_WINDHEAD "../Lab5/windhead.3ds"
-#define BACKGROUND  "../Lab5/sky.jpg"
 #define TEXTURE_COW "../Lab5/Cow.png"
 /*----------------------------------------------------------------------------
   ----------------------------------------------------------------------------*/
 
 std::vector<float> g_vp, g_vn, g_vt;
 int g_point_count = 0;
-int cow_count, fence_count, barn_count, plain_count, body_count, head_count, duck_count, owl_count; 
+int cow_count, fence_count, barn_count, plain_count, body_count, head_count, duck_count, owl_count, scarecrow_count; 
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -212,7 +211,7 @@ void generateObjectBufferMesh() {
 	body_count = g_point_count;
 	load_mesh(MESH_WINDHEAD);
 	head_count = g_point_count;
-	load_mesh(MESH_OWL);
+	load_mesh(MESH_BIRD);
 	owl_count = g_point_count;
 	load_mesh(MESH_FENCE);
 	fence_count = g_point_count;
@@ -238,7 +237,7 @@ void generateObjectBufferMesh() {
 	
 //	This is for texture coordinates which you don't currently need, so I have commented it out
 //	unsigned int vt_vbo = 0;
-	//glGenBuffers (1, &vt_vbo);
+//	glGenBuffers (1, &vt_vbo);
 //	glBindBuffer (GL_ARRAY_BUFFER, vt_vbo);
 //	glBufferData (GL_ARRAY_BUFFER, g_point_count * 2 * sizeof (float), &g_vt[0], GL_STATIC_DRAW);
 	
@@ -263,8 +262,6 @@ void generateObjectBufferMesh() {
 
 
 void display(){
-
-
 	// tell GL to only draw onto a pixel if the shape is closer to the viewer
 	glEnable (GL_DEPTH_TEST); // enable depth-testing
 	glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
@@ -289,6 +286,51 @@ void display(){
 	glUniformMatrix4fv (matrix_location, 1, GL_FALSE, model.m);
 	glDrawArrays (GL_TRIANGLES, 0, cow_count);
 
+	// child of hierarchy TOP
+	mat4 cow2 = translate(identity_mat4(), vec3(0.0, 0.0, 15.0));
+	cow2 = rotate_y_deg(cow2, 120.0f);
+	cow2= model*cow2;
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, cow2.m);
+	glDrawArrays(GL_TRIANGLES, 0, cow_count);
+
+	
+	mat4 cow3 = translate(identity_mat4(), vec3(-15.0, 0.0, -15.0));
+	cow3 = rotate_y_deg(cow3, 170.0f);
+	cow3 = cow2*cow3;
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, cow3.m);
+	glDrawArrays(GL_TRIANGLES, 0, cow_count);
+
+	mat4 cow4 = translate(identity_mat4(), vec3(-15.0, 0.0, -15.0));
+	cow4 = rotate_y_deg(cow4, 170.0f);
+	cow4 = cow3*cow4;
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, cow4.m);
+	glDrawArrays(GL_TRIANGLES, 0, cow_count);
+
+	mat4 cow5 = translate(identity_mat4(), vec3(15.0, 0.0, 0.0));
+	cow5 = rotate_y_deg(cow5, 250.0f);
+	cow5 = cow3*cow5;
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, cow5.m);
+	glDrawArrays(GL_TRIANGLES, 0, cow_count);
+
+	mat4 cow6 = translate(identity_mat4(), vec3(5.0, 0.0, -8.0));
+	cow6 = rotate_y_deg(cow6, 250.0f);
+	cow6 = model*cow6;
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, cow6.m);
+	glDrawArrays(GL_TRIANGLES, 0, cow_count);
+
+	mat4 cow7 = translate(identity_mat4(), vec3(15.0, 0.0, 18.0));
+	cow7 = rotate_y_deg(cow7, 45.0f);
+	cow7 = model*cow7;
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, cow7.m);
+	glDrawArrays(GL_TRIANGLES, 0, cow_count);
+
+	mat4 cow8 = translate(identity_mat4(), vec3(-15.0, 0.0, 18.0));
+	cow8 = rotate_y_deg(cow8, 105.0f);
+	cow8 = cow6*cow8;
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, cow8.m);
+	glDrawArrays(GL_TRIANGLES, 0, cow_count);
+
+
 	//PLAIN
 	view = identity_mat4();
 	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
@@ -309,10 +351,22 @@ void display(){
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model5.m);
 	glDrawArrays(GL_TRIANGLES, cow_count + plain_count, body_count);
 
+	mat4 wleft = translate(identity_mat4(), vec3(-5.0, 0.0, -5.0));
+	wleft = model5*wleft;
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, wleft.m);
+	glDrawArrays(GL_TRIANGLES, cow_count + plain_count, body_count);
+
+	mat4 wright = translate(identity_mat4(), vec3(5.0, 0.0, -5.0));
+	wright = model5*wright;
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, wright.m);
+	glDrawArrays(GL_TRIANGLES, cow_count + plain_count, body_count);
+
+	
+
 	//WINDMILL HEAD
 	view = identity_mat4();
 	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
-	mat4 model6 = translate(identity_mat4(), vec3(0.0f, 6.0f,-16.0f));
+	mat4 model6 = translate(identity_mat4(), vec3(0.0f, 6.0f,-16.9f));
 	model6 = rotate_z_deg(identity_mat4(), rotate_y);
 	model6 = translate(model6, vec3(0.0f, 6.0f, -16.0f));
 	view = camMatrix;
@@ -320,6 +374,19 @@ void display(){
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model6.m);
 	glDrawArrays(GL_TRIANGLES, cow_count + plain_count +body_count , head_count);
+
+	mat4 headleft = translate(identity_mat4(), vec3(-5.0, 0.0, -5.0));
+	headleft = model6*headleft;
+	headleft = translate(model6, vec3(-5.0, 0.0, -5.0));
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, headleft.m);
+	glDrawArrays(GL_TRIANGLES, cow_count + plain_count + body_count, head_count);
+
+	mat4 headright = translate(identity_mat4(), vec3(5.0, 0.0, -5.0));
+	headright = model6*headright;
+	headright = translate(model6, vec3(5.0, 0.0, -5.0));
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, headright.m);
+	glDrawArrays(GL_TRIANGLES, cow_count + plain_count + body_count, head_count);
+
 
 	//BIRD
 	view = identity_mat4();
@@ -332,11 +399,17 @@ void display(){
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, owl.m);
 	glDrawArrays(GL_TRIANGLES, cow_count + plain_count + body_count + head_count, owl_count);
 
+	mat4 bd2 = translate(model, vec3(-15.0, 7.0, -15.0));
+	bd2 = translate(bd2, vec3(rotate_y, 0.0f, 0.0f));
+	bd2 = model*bd2; 
+	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, bd2.m);
+	glDrawArrays(GL_TRIANGLES, cow_count + plain_count + body_count + head_count, owl_count);
+
 
 	// fence
 	view = identity_mat4();
 	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
-	mat4 model2 = translate(model, vec3(7.0f, -1.0f, 0.0f));
+	mat4 model2 = translate(model, vec3(-3.0f, -1.0f, -2.0f));
 	view = camMatrix;
 	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
@@ -347,16 +420,14 @@ void display(){
 	//BARN
 	view = identity_mat4();
 	persp_proj = perspective(45.0, (float)width / (float)height, 0.1, 100.0);
-	mat4 model3 = translate(model, vec3(-6.0f, -1.0f, 0.0f));
+	mat4 model3 = translate(model, vec3(-10.0f, -1.0f, 0.0f));
 	view = camMatrix;
 	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, model3.m);
 	glDrawArrays(GL_TRIANGLES, cow_count + plain_count + body_count + owl_count + head_count + fence_count, barn_count);
-
-	
-	
-    glutSwapBuffers();
+    
+	glutSwapBuffers();
 }
 
 
@@ -371,6 +442,7 @@ void updateScene() {
 		delta = 0.03f;
 	last_time = curr_time;
 
+	
 	// rotate the model slowly around the y axis
 	rotate_y+=0.05f;
 	// Draw the next frame
@@ -390,46 +462,16 @@ void init()
 void keypress(unsigned char key, int x, int y) {
 
 	switch (key) {
-	case 'c': //scale
-		trans = scale(trans, vec3(0.8f, 0.8f, 0.8f));
-		break;
-	case 'v': //scale
-		trans = scale(trans, vec3(1.2f, 1.2f, 1.2f));
-		break;
-	case 'w': //rotate X axis
-		trans = rotate_x_deg(trans, 10.0f);
-		break;
-	case 'e': //rotate X axis
-		trans = rotate_x_deg(trans, -10.0f);
-		break;
-	case 'a'://rotate Y axis
-		trans = rotate_y_deg(trans, 10.0f);
-		break;
-	case 's'://rotate Y axis
-		trans = rotate_y_deg(trans, -10.0f);
-		break;
-	case 'z'://rotate Z axis
-		trans = rotate_z_deg(trans, 10.0f);
-		break;
-	case 'x'://rotate Z axis
-		trans = rotate_z_deg(trans, -10.0f);
-		break;
-	case 'p'://translate the X pos by .1
-		trans = translate(trans, vec3(10.0f, 0.0f, 0.0f));
-		break;
-	case 'o'://translate the X pos by .1
-		trans = translate(trans, vec3(-10.0f, 0.0f, 0.0f));
-		break;
-	case'#':
+	case'a':
 		camMatrix = rotate_y_deg(camMatrix, 5.0f);
 		break;
-	case'/':
+	case'd':
 		camMatrix = rotate_y_deg(camMatrix, -5.0f);
 		break;
-	case'=':
+	case'w':
 		camMatrix = rotate_x_deg(camMatrix, 5.0f);
 		break;
-	case']':
+	case's':
 		camMatrix = rotate_x_deg(camMatrix, -5.0f);
 		break;
 	default:
